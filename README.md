@@ -11,8 +11,8 @@ The app combines:
 - Citation-based signals from Semantic Scholar.
 - Automated monthly topic clustering.
 - A ranked paper feed and topic heatmap
-  
-** Features ** 
+
+Features: 
 - Browse ML papers by month.
 - Filter papers by topic, category, or keyword.
 - See trending topics for each month.
