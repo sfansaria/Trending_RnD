@@ -2,7 +2,7 @@
 
 Discover machine learning papers by month, topic, and trend strength. This app fetches papers from arXiv, enriches them with ranking signals, extracts monthly topics, and helps users explore what was trending in ML during any month of the year.
 
-** Overview ** 
+# Overview 
 Machine learning research moves fast, and it is hard to keep track of what topics are rising each month. This project builds a searchable and browsable interface over ML papers so users can see the most relevant papers for a given month and topic.
 
 The app combines:
