@@ -1,6 +1,6 @@
 // =============================================================================
 // FILE: frontend/tailwind.config.js
-// PURPOSE: Configures Tailwind CSS — the styling framework we use.
+// PURPOSE: Configures Tailwind CSS — the styling framework we use
 //          Tailwind works by scanning your code for class names and generating
 //          only the CSS those classes need. This file tells it where to look
 //          and lets you add custom colours/fonts.
