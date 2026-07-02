@@ -9,7 +9,7 @@
 from typing import Optional
 
 # datetime is Python's built-in type for dates and times
-from datetime import datetime
+from datetime import datetime, timezone
 
 # SQLModel combines SQLAlchemy (database tool) + Pydantic (data validation).
 # SQLModel = Field lets us set default values, indexes, constraints.
