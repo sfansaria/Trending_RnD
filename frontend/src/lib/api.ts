@@ -148,3 +148,28 @@ export function currentMonthKey() {
   // padStart(2, "0") adds a leading zero: month 6 → "06"
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
+
+
+//new part for bookmarking
+
+// Save a paper — calls POST /api/saved/{arxiv_id}
+export async function savePaper(arxivId: string) {
+  const r = await fetch(`${API}/api/saved/${arxivId}`, { method: "POST" });
+  if (!r.ok) throw new Error("Failed to save paper");
+  return r.json();
+}
+ 
+// Remove a saved paper — calls DELETE /api/saved/{arxiv_id}
+export async function unsavePaper(arxivId: string) {
+  const r = await fetch(`${API}/api/saved/${arxivId}`, { method: "DELETE" });
+  if (!r.ok) throw new Error("Failed to unsave paper");
+  return r.json();
+}
+ 
+// Get all saved papers — calls GET /api/saved
+export async function fetchSavedPapers() {
+  const r = await fetch(`${API}/api/saved`);
+  if (!r.ok) throw new Error("Failed to fetch saved papers");
+  return r.json() as Promise<{ total: number; papers: Paper[] }>;
+}
+ 
