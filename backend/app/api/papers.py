@@ -20,7 +20,7 @@ from datetime import datetime
 
 # get_session: function that provides a DB connection (from init_db.py)
 from app.core.init_db import get_session
-from app.models.paper import Paper, TopicSummary
+from app.models.paper import Paper, TopicSummary, SavedPaper
 
 # The three pipeline steps
 from app.services.fetcher import fetch_papers_for_month
@@ -249,3 +249,74 @@ def get_stats(session: Session = Depends(get_session)):
         "months_indexed": sorted(months, reverse=True),
         "top_topics": list(set(p.topic_label for p in all_papers if p.topic_label))[:10],
     }
+
+######################################
+#new endpoint for bookmarking feature
+######################################
+
+@router.post("/saved/{arxiv_id}")
+def save_paper(arxiv_id: str, session: Session = Depends(get_session)):
+    """
+    POST /api/saved/2401.12345v1 — bookmark a paper.
+    If it's already saved, does nothing (no duplicate, no error).
+    """
+    # Check if it's already saved
+    existing = session.exec(
+        select(SavedPaper).where(SavedPaper.arxiv_id == arxiv_id)
+    ).first()
+ 
+    if existing:
+        # Already saved — nothing to do, just confirm it's saved
+        return {"status": "already saved", "arxiv_id": arxiv_id}
+ 
+    # Make sure the paper actually exists before saving a reference to it
+    paper = session.exec(
+        select(Paper).where(Paper.arxiv_id == arxiv_id)
+    ).first()
+    if not paper:
+        raise HTTPException(status_code=404, detail="Paper not found")
+ 
+    session.add(SavedPaper(arxiv_id=arxiv_id))
+    session.commit()
+    return {"status": "saved", "arxiv_id": arxiv_id}
+ 
+ 
+@router.delete("/saved/{arxiv_id}")
+def unsave_paper(arxiv_id: str, session: Session = Depends(get_session)):
+    """
+    DELETE /api/saved/2401.12345v1 — remove a bookmark.
+    """
+    existing = session.exec(
+        select(SavedPaper).where(SavedPaper.arxiv_id == arxiv_id)
+    ).first()
+ 
+    if not existing:
+        raise HTTPException(status_code=404, detail="Not currently saved")
+ 
+    session.delete(existing)
+    session.commit()
+    return {"status": "removed", "arxiv_id": arxiv_id}
+ 
+ 
+@router.get("/saved")
+def get_saved_papers(session: Session = Depends(get_session)):
+    """
+    GET /api/saved — return all bookmarked papers, newest-saved first.
+    Joins SavedPaper (the bookmark) with Paper (the actual paper data).
+    """
+    # Get all bookmarks, newest first
+    saved = session.exec(
+        select(SavedPaper).order_by(SavedPaper.saved_at.desc())
+    ).all()
+ 
+    # For each bookmark, look up the full paper details
+    papers = []
+    for s in saved:
+        paper = session.exec(
+            select(Paper).where(Paper.arxiv_id == s.arxiv_id)
+        ).first()
+        if paper:  # skip silently if the paper was somehow deleted
+            papers.append(_paper_to_dict(paper))
+ 
+    return {"total": len(papers), "papers": papers}
+ 
