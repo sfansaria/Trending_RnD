@@ -119,3 +119,22 @@ class TopicSummary(SQLModel, table=True):
     # JSON list of the top 5 arxiv_ids in this cluster by trend score
     # e.g. '["2401.12345", "2401.67890"]'
     top_paper_ids: str
+
+
+################################################################
+#new part appended to add the Bookmarking feature to the database
+###########################################################
+class SavedPaper(SQLModel, table=True):
+    # One row = one bookmarked paper.
+    # We don't store the full paper here — just a reference to its arxiv_id.
+    # The actual paper data still lives in the Paper table; we join on arxiv_id
+    # when the frontend asks for the list of saved papers.
+    id: Optional[int] = Field(default=None, primary_key=True)
+ 
+    # The arxiv_id of the paper being saved, e.g. "2401.12345v1"
+    # index=True makes lookups fast. unique=True means you can't save the
+    # same paper twice — saving it again just won't insert a duplicate.
+    arxiv_id: str = Field(index=True, unique=True)
+ 
+    # When the user saved it — used to sort the Saved tab "most recently saved first"
+    saved_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
