@@ -35,3 +35,7 @@ Each paper gets a trend score based on a weighted combination of signals such as
 
 This ranking helps surface papers that are both recent and influential rather than only newest or only most cited.
 
+
+#Tech stack recommendation
+For a quick build: Next.js frontend, a Python FastAPI backend, PostgreSQL with a papers table, and a cron job using arxiv + semanticscholar Python libraries. 
+The arXiv API is free and requires no key; Semantic Scholar's free tier allows 100 requests/second.
