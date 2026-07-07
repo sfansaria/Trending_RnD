@@ -76,15 +76,24 @@ def get_papers(
     # ... means the field is required (no default)
     month: str = Query(..., description="Month in YYYY-MM format, e.g. 2024-06"),
     # Optional means the topic filter can be omitted — returns all topics
-    topic: Optional[str] = Query(None, description="Filter by topic label"),
+    topic: Optional[str] = Query(None),
     # Pagination: limit = how many results, offset = skip first N
     limit: int = Query(20, le=100),   # le=100 means max allowed value is 100
     offset: int = Query(0),
+
+    #########################################################################
+    # NEW: sort parameter — controls which column we ORDER BY
+    # "score"     = trend_score descending (default, same as before)
+    # "citations" = citation_count descending (most cited first)
+    # "date"      = published descending (newest paper first)
+    sort: str = Query("score", regex="^(score|citations|date)$"),
+    #########################################################################
     # Depends(get_session) tells FastAPI: "call get_session() and pass the result here"
     # This is how FastAPI injects the database connection into the route function
-    session: Session = Depends(get_session),
-):
+    session: Session = Depends(get_session),):
     """Return top trending papers for a given month."""
+    """after new addition"""
+    """Return papers for a month, with optional topic filter and sort order."""
 
     # Build a SQL SELECT query
     # select(Paper) = SELECT * FROM paper
@@ -95,21 +104,32 @@ def get_papers(
     if topic:
         query = query.where(Paper.topic_label == topic)
 
-    # Sort by trend_score descending (highest score first)
+   
     # .offset() and .limit() handle pagination
-    query = query.order_by(Paper.trend_score.desc()).offset(offset).limit(limit)
+    #apply the correct ORDER BY based on what the user picked
+    if sort == "citations":
+       #most cited papers first
+       query = query.order_by(Paper.citation_count.desc()) #.offset(offset).limit(limit)
+    elif sort == "date":
+        #mOst recently published papers first
+        query = query.order_by(Paper.published.desc())
+    else:
+        #Default: highest trend score first
+        query = query.order_by(Paper.trend_score.desc())
+
+    #  .offset() and .limit() handle pagination
+    query = query.offset(offset).limit(limit)
 
     # Execute the query and get results
     papers = session.exec(query).all()
 
     # Also get total count (without pagination limit) so the UI can show "X papers"
-    total = session.exec(
-        select(Paper).where(Paper.month_key == month)
-    ).all()
+    total = session.exec(select(Paper).where(Paper.month_key == month)).all()
 
     return {
         "month": month,
         "total": len(total),
+        "sort": sort,  #echo back what sort was used
         "papers": [_paper_to_dict(p) for p in papers],  # list comprehension = convert all
     }
 
@@ -249,6 +269,7 @@ def get_stats(session: Session = Depends(get_session)):
         "months_indexed": sorted(months, reverse=True),
         "top_topics": list(set(p.topic_label for p in all_papers if p.topic_label))[:10],
     }
+
 
 ######################################
 #new endpoint for bookmarking feature
