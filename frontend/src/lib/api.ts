@@ -1,13 +1,21 @@
 // =============================================================================
-// Purpose: all the functions the frontend uses talk to the backend API.
-// Instead of writing fetch() calls scattered across the UI code, we centralise them here. 
-// Each function = one API call.
-
+// FILE: frontend/src/lib/api.ts
+// PURPOSE: All the functions the frontend uses to talk to the backend API.
+//          Instead of writing fetch() calls scattered across the UI code,
+//          we centralise them here. Each function = one API call.
+//
 // WHY TYPESCRIPT (.ts not .js):
 //   TypeScript adds type annotations (like Paper, Topic interfaces below).
 //   This means VS Code will warn you if you try to use a field that doesn't
 //   exist, catching bugs before you even run the code.
 // =============================================================================
+
+// NEXT_PUBLIC_API_URL: an environment variable you can set to point to a
+// deployed backend. In development it's empty (""), so requests go to the
+// same origin (localhost:3000), which Next.js proxies to localhost:8000
+// via the rewrite rule in next.config.js
+const API = process.env.NEXT_PUBLIC_API_URL || "";
+
 
 // =============================================================================
 // TYPE DEFINITIONS
@@ -15,9 +23,6 @@
 // TypeScript uses these to catch bugs at development time.
 // They must match exactly what _paper_to_dict() returns in papers.py
 // =============================================================================
-
-// Matches the dict returned by _paper_to_dict() in backend/app/api/papers.py
-const API = process.env.NEXT_PUBLIC_API_URL || "";
 
 // Matches the dict returned by _paper_to_dict() in backend/app/api/papers.py
 export interface Paper {
@@ -34,7 +39,8 @@ export interface Paper {
   trend_score: number;       // 0–100
   citation_count: number;
   topic_label: string | null; // null if topics haven't been extracted yet
-  topic_id: number | null;}
+  topic_id: number | null;
+}
 
 // Matches the topic dicts returned by get_topics() in papers.py
 export interface Topic {
@@ -57,10 +63,9 @@ export interface Topic {
 // fetchPapers: GET /api/papers?month=...&topic=...&limit=...&offset=...
 // Returns paginated list of papers for a month, optionally filtered by topic
 // -----------------------------------------------------------------------------
-
-export async function fetchPapers(month: string, topic?: string, limit = 20, offset = 0) {
+export async function fetchPapers(month: string, topic?: string, limit = 20, offset = 0, sort="score") {
   // URLSearchParams builds a query string: month=2024-06&limit=20&offset=0
-  const params = new URLSearchParams({ month, limit: String(limit), offset: String(offset) });
+  const params = new URLSearchParams({ month, limit: String(limit), offset: String(offset), sort, }); //send the sort choice to the backnend
   if (topic) params.set("topic", topic);  // only add topic param if provided
 
   const r = await fetch(`${API}/api/papers?${params}`);
@@ -68,14 +73,13 @@ export async function fetchPapers(month: string, topic?: string, limit = 20, off
 
   // r.json() parses the JSON response body into a JavaScript object
   // "as Promise<...>" tells TypeScript what type to expect
-  return r.json() as Promise<{ month: string; total: number; papers: Paper[] }>;
+  return r.json() as Promise<{ month: string; total: number; sort: string, papers: Paper[] }>;
 }
 
 // -----------------------------------------------------------------------------
 // fetchTopics: GET /api/topics?month=...
 // Returns topic clusters for the month — used to populate the topic pills
 // -----------------------------------------------------------------------------
-
 export async function fetchTopics(month: string) {
   const r = await fetch(`${API}/api/topics?month=${month}`);
   if (!r.ok) throw new Error("Failed to fetch topics");
@@ -126,11 +130,11 @@ export async function fetchStats() {
   return r.json();
 }
 
+
 // =============================================================================
 // UTILITY FUNCTIONS
 // Small helpers used in the UI to format data
 // =============================================================================
-
 
 // Convert "2024-06" → "June 2024" for display in the month picker
 export function formatMonth(key: string) {
@@ -173,3 +177,4 @@ export async function fetchSavedPapers() {
   return r.json() as Promise<{ total: number; papers: Paper[] }>;
 }
  
+
