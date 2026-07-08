@@ -538,9 +538,9 @@ export default function Home() {
       <header className="border-b border-ink-700 px-6 py-4 flex items-center justify-between sticky top-0 z-10 bg-ink-950/90 backdrop-blur-sm">
         <div>
           <h1 className="text-lg font-medium text-white tracking-tight">
-            <span className="text-accent font-mono">arXiv</span> ML Trends
+            <span className="text-accent font-mono">Trending</span> RnD
           </h1>
-          <p className="text-xs text-ink-400">trending machine learning papers by month</p>
+          <p className="text-xs text-ink-400">discover trending machine learning research papers by month</p>
         </div>
         <div className="flex items-center gap-4">
           {stats && (
