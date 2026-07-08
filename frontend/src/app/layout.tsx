@@ -1,3 +1,5 @@
+
+
 // =============================================================================
 // FILE: frontend/src/app/layout.tsx
 // PURPOSE: The root layout — a wrapper that surrounds EVERY page in the app.
@@ -13,38 +15,38 @@
 //   1. next.config.js  → sets up the /api proxy
 //   2. layout.tsx      → this file, runs once, sets up the shell
 //   3. page.tsx        → the actual UI renders inside {children}
-// ============================================================================
+// =============================================================================
+
 
 // "import type" = import only the TypeScript type definition, not actual code.
 // Metadata is a TypeScript type provided by Next.js.
 // It tells TypeScript what fields are valid inside the metadata object below.
 // At runtime this import disappears — it's only used during development
 // to catch typos like writing "tittle" instead of "title".
-
 import type { Metadata } from "next";
+
 
 // Import the global CSS file that applies styles to the ENTIRE app.
 // This must be imported here (in the root layout) so it loads on every page.
 // It loads: Google Fonts (Inter + JetBrains Mono), Tailwind base styles,
 // the dark background, and the card hover animation.
+
 import "./globals.css";
-
-
 
 // =============================================================================
 // METADATA
 // Next.js reads this exported object and puts it into the <head> of the HTML.
 // You never write <head> or <title> tags manually in Next.js — this handles it.
 // =============================================================================
+
 export const metadata: Metadata = {
   // Sets the browser tab title — what you see in the tab at the top of Chrome.
-  title: "arXiv ML Trends",
+  title: "Trending RnD",
 
   // Sets the meta description — used by Google and other search engines
   // to show a summary under the page title in search results.
-  description: "Discover trending machine learning papers by month and topic",
+  description: "Discover trending machine learning research papers by month and topic",
 };
-
 
 
 // =============================================================================
@@ -57,13 +59,13 @@ export const metadata: Metadata = {
 //                     (JSX, strings, numbers, arrays of elements, etc.)
 // =============================================================================
 
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     // <html lang="en"> — the outermost HTML element.
     // lang="en" tells the browser and screen readers the page is in English.
     // This is important for accessibility tools.
     <html lang="en">
-
       {/* <body> wraps all visible content on the page.
           
           className applies two Tailwind CSS utility classes:
@@ -81,10 +83,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           Next.js replaces {children} with the full output
                           of page.tsx at runtime. */}
       <body className="min-h-screen bg-ink-950">{children}</body>
-
     </html>
   );
 }
-
-
-
