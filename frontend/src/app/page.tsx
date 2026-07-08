@@ -48,9 +48,122 @@ function CatBadge({ cat }: { cat: string }) {
 }
 
 // =============================================================================
+// HELPER: buildBibTeX
+// Builds a BibTeX citation string from a paper object.
+//
+// BibTeX is the standard citation format used in LaTeX academic papers.
+// Format:
+//   @misc{arxiv_id,
+//     title  = {Paper Title},
+//     author = {Author One and Author Two},
+//     year   = {2024},
+//     url    = {https://arxiv.org/abs/...}
+//   }
+//
+// The citation key (first line) uses the first author's last name + year,
+// e.g. "vaswani2017" — this is the standard academic convention.
+// =============================================================================
+function buildBibTeX(paper: Paper): string {
+  // Extract the first author's last name for the citation key
+  // "Ashish Vaswani" → "vaswani"
+  const firstAuthor = paper.authors[0] || "unknown";
+  const lastName = firstAuthor.split(" ").pop()?.toLowerCase() || "unknown";
+
+  // Extract the year from the published date string
+  const year = new Date(paper.published).getFullYear();
+
+  // Build citation key: lastnameyear e.g. "vaswani2017"
+  const key = `${lastName}${year}`;
+
+  // Format authors as "First Last and First Last and ..."
+  // BibTeX uses "and" as the separator between authors
+  const authors = paper.authors.join(" and ");
+
+  // Build and return the full BibTeX string
+  return `@misc{${key},
+  title  = {${paper.title}},
+  author = {${authors}},
+  year   = {${year}},
+  url    = {${paper.url}}
+}`;
+}
+
+// =============================================================================
+// HELPER: buildShareURL
+// Builds a shareable URL for a paper.
+// Simply uses the paper's arXiv abstract URL — universally accessible,
+// no login required, works in any browser.
+// =============================================================================
+function buildShareURL(paper: Paper): string {
+  return paper.url;
+}
+
+// =============================================================================
+// COMPONENT: CopyButton
+// A button that copies text to the clipboard when clicked.
+// Shows "Copied!" for 2 seconds after a successful copy, then resets.
+//
+// Props:
+//   text  — the string to copy to clipboard
+//   label — the button label in its normal state (e.g. "BibTeX" or "Link")
+// =============================================================================
+function CopyButton({ text, label }: { text: string; label: string }) {
+  // "idle" = normal state showing the label
+  // "copied" = shows "Copied!" for 2 seconds after a successful copy
+  // "error" = shows "Failed" if the clipboard API isn't available
+  const [state, setState] = useState<"idle" | "copied" | "error">("idle");
+
+  async function handleCopy(e: React.MouseEvent) {
+    // Stop the click from bubbling up to the PaperCard and collapsing it
+    e.stopPropagation();
+
+    try {
+      // navigator.clipboard.writeText is the modern clipboard API.
+      // It requires the page to be served over HTTPS or localhost.
+      // Both our dev setup (localhost) and production satisfy this.
+      await navigator.clipboard.writeText(text);
+      setState("copied");
+
+      // Reset back to "idle" after 2 seconds
+      setTimeout(() => setState("idle"), 2000);
+    } catch {
+      // Fallback: clipboard API blocked (e.g. in some iframe contexts)
+      setState("error");
+      setTimeout(() => setState("idle"), 2000);
+    }
+  }
+
+  // Pick the button label based on current state
+  const displayLabel =
+    state === "copied" ? "Copied!" :
+    state === "error"  ? "Failed"  :
+    label;
+
+  // Pick the button colour based on state
+  // idle = default outline style
+  // copied = green to confirm success
+  // error = red to signal failure
+  const style =
+    state === "copied" ? "border-green-500 text-green-400" :
+    state === "error"  ? "border-red-500 text-red-400"     :
+    "border-ink-600 text-ink-300 hover:border-accent hover:text-white";
+
+  return (
+    <button
+      onClick={handleCopy}
+      className={`text-xs px-3 py-1.5 rounded-lg border transition-colors ${style}`}
+    >
+      {displayLabel}
+    </button>
+  );
+}
+
+// =============================================================================
 // COMPONENT: PaperCard
 // Displays one paper. Click anywhere on the card to expand the abstract.
-// Star button saves/unsaves the paper (calls back to Home via onToggleSave).
+// Expanded view shows: abstract, Abstract link, PDF link, BibTeX copy button,
+// Share link copy button, and citation count.
+// Star button saves/unsaves the paper.
 // =============================================================================
 function PaperCard({ paper, rank, isSaved, onToggleSave }: {
   paper: Paper;
@@ -89,7 +202,7 @@ function PaperCard({ paper, rank, isSaved, onToggleSave }: {
                 </span>
               )}
             </div>
-            {/* Star button: stopPropagation prevents the card from expanding when clicking the star */}
+            {/* Star button: stopPropagation prevents the card expanding when clicking star */}
             <button
               onClick={e => { e.stopPropagation(); onToggleSave(paper.arxiv_id, isSaved); }}
               className="shrink-0 text-lg leading-none transition-colors"
@@ -109,26 +222,61 @@ function PaperCard({ paper, rank, isSaved, onToggleSave }: {
           {/* Trend score bar */}
           <ScoreBar score={paper.trend_score} />
 
-          {/* Expanded content: shown when card is clicked */}
+          {/* Expanded content — shown when card is clicked */}
           {expanded && (
             <div className="mt-3 pt-3 border-t border-ink-700">
+
+              {/* Full abstract */}
               <p className="text-xs text-ink-300 leading-relaxed mb-3">{paper.abstract}</p>
-              <div className="flex gap-2">
-                <a href={paper.url} target="_blank" rel="noreferrer"
+
+              {/* Action buttons row */}
+              <div className="flex flex-wrap gap-2">
+
+                {/* Link to arXiv abstract page — opens in new tab */}
+                <a
+                  href={paper.url}
+                  target="_blank"
+                  rel="noreferrer"
                   onClick={e => e.stopPropagation()}
-                  className="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-light transition-colors">
+                  className="text-xs px-3 py-1.5 rounded-lg bg-accent text-white hover:bg-accent-light transition-colors"
+                >
                   Abstract
                 </a>
+
+                {/* PDF link — only shown if pdf_url exists */}
                 {paper.pdf_url && (
-                  <a href={paper.pdf_url} target="_blank" rel="noreferrer"
+                  <a
+                    href={paper.pdf_url}
+                    target="_blank"
+                    rel="noreferrer"
                     onClick={e => e.stopPropagation()}
-                    className="text-xs px-3 py-1.5 rounded-lg border border-ink-600 text-ink-300 hover:border-accent hover:text-white transition-colors">
+                    className="text-xs px-3 py-1.5 rounded-lg border border-ink-600 text-ink-300 hover:border-accent hover:text-white transition-colors"
+                  >
                     PDF
                   </a>
                 )}
+
+                {/* Copy BibTeX citation to clipboard
+                    buildBibTeX() generates the full @misc{...} string.
+                    CopyButton handles the clipboard write and shows "Copied!" feedback. */}
+                <CopyButton
+                  text={buildBibTeX(paper)}
+                  label="BibTeX"
+                />
+
+                {/* Copy shareable link to clipboard
+                    buildShareURL() just returns paper.url (the arXiv abstract page).
+                    Anyone with the link can read the paper for free. */}
+                <CopyButton
+                  text={buildShareURL(paper)}
+                  label="Copy Link"
+                />
+
+                {/* Citation count — display only, not a button */}
                 <span className="text-xs px-2 py-1.5 text-ink-400">
                   {paper.citation_count} citations
                 </span>
+
               </div>
             </div>
           )}
@@ -203,9 +351,9 @@ function TopicPills({ topics, selected, onChange }: {
 
 // =============================================================================
 // COMPONENT: SortDropdown
-// A small dropdown that lets the user pick how papers are sorted.
+// A small dropdown to pick how papers are sorted.
 // Options: trend score (default), citations, publish date.
-// Calls onChange with the selected value — Home re-fetches with the new sort.
+// Calls onChange with the new value — Home re-fetches with the new sort order.
 // =============================================================================
 function SortDropdown({ value, onChange }: {
   value: string;
@@ -298,7 +446,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
 
   // Sort state: "score" | "citations" | "date"
-  // When this changes, the useEffect below re-fetches with the new sort order
   const [sort, setSort] = useState("score");
 
   // Tab state: "browse" | "saved" | "ingest"
@@ -306,14 +453,11 @@ export default function Home() {
   const [stats, setStats] = useState<any>(null);
 
   // Bookmark state
-  // savedIds = Set of arxiv_ids that are bookmarked — used for instant star lookup
-  // savedPapers = full paper objects — used to render the Saved tab list
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [savedPapers, setSavedPapers] = useState<Paper[]>([]);
 
   // ── DATA LOADING ───────────────────────────────────────────────────────────
 
-  // Load available months from the DB
   const loadMonths = useCallback(async () => {
     const data = await fetchMonths();
     setMonths(data.months);
@@ -322,16 +466,13 @@ export default function Home() {
     }
   }, [selectedMonth]);
 
-  // Load the saved papers list — called on page load and after every star click
   const loadSaved = useCallback(async () => {
     const data = await fetchSavedPapers().catch(() => ({ total: 0, papers: [] as Paper[] }));
     setSavedPapers(data.papers);
     setSavedIds(new Set(data.papers.map(p => p.arxiv_id)));
   }, []);
 
-  // Called when user clicks a star button on any paper card
-  // Uses optimistic UI: the star flips instantly, then the backend is called
-  // If the backend call fails, the star flips back
+  // Optimistic star toggle: flips instantly, then syncs with backend
   async function handleToggleSave(arxivId: string, currentlySaved: boolean) {
     setSavedIds(prev => {
       const next = new Set(prev);
@@ -353,14 +494,12 @@ export default function Home() {
 
   // ── EFFECTS ────────────────────────────────────────────────────────────────
 
-  // On page load: fetch months, saved papers, and stats
   useEffect(() => {
     loadMonths();
     loadSaved();
     fetchStats().then(setStats).catch(() => {});
   }, []);
 
-  // When selected month changes: reload topics and clear search + topic filter
   useEffect(() => {
     if (!selectedMonth) return;
     fetchTopics(selectedMonth).then(d => setTopics(d.topics)).catch(() => setTopics([]));
@@ -369,8 +508,7 @@ export default function Home() {
     setSearchQ("");
   }, [selectedMonth]);
 
-  // When month, topic, OR sort changes: re-fetch the paper list
-  // sort is in the dependency array so changing the dropdown triggers a new fetch
+  // Re-fetch when month, topic, OR sort changes
   useEffect(() => {
     if (!selectedMonth) return;
     setLoading(true);
@@ -378,9 +516,8 @@ export default function Home() {
       .then(d => { setPapers(d.papers); setTotal(d.total); })
       .catch(() => setPapers([]))
       .finally(() => setLoading(false));
-  }, [selectedMonth, selectedTopic, sort]); // sort is included here
+  }, [selectedMonth, selectedTopic, sort]);
 
-  // Handle search form submission
   async function handleSearch(e: React.FormEvent) {
     e.preventDefault();
     if (!searchQ.trim()) { setSearchResults(null); return; }
@@ -391,7 +528,6 @@ export default function Home() {
     setLoading(false);
   }
 
-  // Show search results if a search is active, otherwise show regular paper list
   const displayPapers = searchResults ?? papers;
 
   // ── RENDER ─────────────────────────────────────────────────────────────────
@@ -412,7 +548,6 @@ export default function Home() {
               {stats.total_papers.toLocaleString()} papers indexed
             </span>
           )}
-          {/* Tab switcher: browse | saved (N) | ingest */}
           <div className="flex rounded-lg border border-ink-600 overflow-hidden">
             {(["browse", "saved", "ingest"] as const).map(t => (
               <button key={t} onClick={() => setTab(t)}
@@ -477,7 +612,6 @@ export default function Home() {
         {/* BROWSE TAB */}
         {tab === "browse" && (
           <>
-            {/* Month picker or empty state */}
             {months.length > 0 ? (
               <MonthPicker months={months} selected={selectedMonth} onChange={setSelectedMonth} />
             ) : (
@@ -493,7 +627,6 @@ export default function Home() {
               </div>
             )}
 
-            {/* Search bar */}
             {months.length > 0 && (
               <form onSubmit={handleSearch} className="flex gap-2">
                 <input
@@ -516,7 +649,6 @@ export default function Home() {
               </form>
             )}
 
-            {/* Topic pills — hidden while search is active */}
             {topics.length > 0 && !searchResults && (
               <div>
                 <p className="text-xs text-ink-500 mb-2 font-mono uppercase tracking-wider">
@@ -526,9 +658,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Paper list */}
             <div>
-              {/* Status bar: shows result count on the left, sort dropdown on the right */}
               {searchResults ? (
                 <p className="text-xs text-ink-500 mb-3 font-mono">
                   {searchResults.length} results for "{searchQ}"
@@ -540,13 +670,11 @@ export default function Home() {
                     <p className="text-xs text-ink-500 font-mono">
                       {total} papers · {selectedTopic ?? "all topics"}
                     </p>
-                    {/* Sort dropdown — only shown when browsing (not searching) */}
                     <SortDropdown value={sort} onChange={setSort} />
                   </div>
                 )
               )}
 
-              {/* Loading skeletons */}
               {loading ? (
                 <div className="space-y-3">
                   {[...Array(5)].map((_, i) => (
@@ -554,7 +682,6 @@ export default function Home() {
                   ))}
                 </div>
               ) : displayPapers.length > 0 ? (
-                /* Paper cards */
                 <div className="space-y-3">
                   {displayPapers.map((p, i) => (
                     <PaperCard
@@ -567,7 +694,6 @@ export default function Home() {
                   ))}
                 </div>
               ) : months.length > 0 ? (
-                /* Empty state */
                 <div className="rounded-xl border border-ink-700 bg-ink-800 p-8 text-center">
                   <p className="text-ink-400 text-sm">No papers found.</p>
                   <p className="text-ink-500 text-xs mt-1">Try a different month or topic.</p>
