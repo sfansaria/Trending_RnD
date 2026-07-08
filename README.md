@@ -1,4 +1,4 @@
-##Trending RnD
+#Trending RnD
 
 A local web app that pulls machine learning research papers from arXiv, scores them by how trending they are, groups them into topic clusters, and lets you browse, search, sort, and save papers — all running on your own machine with no paid APIs or accounts required.
 
