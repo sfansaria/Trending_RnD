@@ -1,0 +1,21 @@
+cat > .gitignore << 'EOF'
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+venv/
+*.db
+
+# Node
+node_modules/
+.next/
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+arxiv_trends.db
+EOF
