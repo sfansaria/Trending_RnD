@@ -10,7 +10,7 @@
 
 from sqlmodel import SQLModel, create_engine, Session
 from pathlib import Path  # Path is Python's cross-platform way to handle file paths
-
+import os
 # -----------------------------------------------------------------------------
 # DATABASE FILE LOCATION
 # __file__ = the path to THIS file (init_db.py)
@@ -19,19 +19,33 @@ from pathlib import Path  # Path is Python's cross-platform way to handle file p
 # .parent   = go up again (backend/)
 # So DB_PATH = backend/arxiv_trends.db
 # -----------------------------------------------------------------------------
-DB_PATH = Path(__file__).parent.parent.parent / "arxiv_trends.db"
+#DB_PATH = Path(__file__).parent.parent.parent / "arxiv_trends.db"
 
 # SQLite connection string format: "sqlite:///path/to/file.db"
 # Three slashes = relative path. The file is created if it doesn't exist.
-DATABASE_URL = f"sqlite:///{DB_PATH}"
+#DATABASE_URL = f"sqlite:///{DB_PATH}"
+
+# -----------------------------------------------------------------------------
+#New addition for deployment 
+# Reads DATABASE_URL from environment variable (set on Render).
+# Falls back to local SQLite file for development on your Mac.
+
+DATABASE_URL = os.environ.get("DATABASE_URL", f"sqlite:///{Path(__file__).parent.parent.parent / 'arxiv_trends.db'}")
+
+# Supabase gives "postgres://" but SQLAlchemy needs "postgresql://"
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+
+# -----------------------------------------------------------------------------
 
 # -----------------------------------------------------------------------------
 # CREATE THE ENGINE
 # The "engine" is the actual connection to the database.
 # All database operations go through this engine.
 # -----------------------------------------------------------------------------
-engine = create_engine(
-    DATABASE_URL,
+'''
+engine = create_engine(DATABASE_URL,
     # SQLite doesn't allow the same connection to be used across threads by default.
     # check_same_thread=False disables that restriction so FastAPI (which uses
     # threads) can share one connection safely.
@@ -40,6 +54,9 @@ engine = create_engine(
     # but noisy in production, so we keep it False
     echo=False,
 )
+'''
+engine = create_engine(DATABASE_URL, echo=False) #echo = False to avoid printing SQL queries in production
+
 
 
 # -----------------------------------------------------------------------------
@@ -50,7 +67,7 @@ engine = create_engine(
 # -----------------------------------------------------------------------------
 def create_db():
     SQLModel.metadata.create_all(engine)
-    print(f"Database ready at {DB_PATH}")
+    print(f"Database ready")
 
 
 # -----------------------------------------------------------------------------
