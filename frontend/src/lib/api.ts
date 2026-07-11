@@ -51,6 +51,24 @@ export interface Topic {
   top_paper_ids: string[];   // arxiv_ids of the top 5 papers
 }
 
+// HeatmapCell: data for one cell in the heatmap grid (one topic x one month)
+// null means that topic had no papers that month
+export interface HeatmapCell {
+  paper_count: number;
+  avg_score: number;
+  top_paper_ids: string[];
+}
+ 
+// HeatmapData: the full grid returned by /api/heatmap
+// months = list of month strings (columns)
+// topics = list of topic labels (rows)
+// grid   = topic_label → month_key → cell data (or null if no data)
+export interface HeatmapData {
+  months: string[];
+  topics: string[];
+  grid: Record<string, Record<string, HeatmapCell | null>>;
+}
+
 
 // =============================================================================
 // API FUNCTIONS
@@ -146,6 +164,15 @@ export function formatMonth(key: string) {
   });
 }
 
+// Convert "2024-06" → "Jun 24" (short version for heatmap column headers)
+export function formatMonthShort(key: string) {
+  const [y, m] = key.split("-");
+  return new Date(Number(y), Number(m) - 1).toLocaleString("en-GB", {
+    month: "short", year: "2-digit"
+  });
+}
+
+
 // Get the current month as "YYYY-MM" for the default month picker value
 export function currentMonthKey() {
   const now = new Date();
@@ -177,4 +204,12 @@ export async function fetchSavedPapers() {
   return r.json() as Promise<{ total: number; papers: Paper[] }>;
 }
  
-
+//new part for heatmap
+// GET /api/heatmap — topic x month grid data for the heatmap view
+// Returns all topic summaries across all months in one call.
+export async function fetchHeatmap() {
+  const r = await fetch(`${API}/api/heatmap`);
+  if (!r.ok) throw new Error("Failed to fetch heatmap data");
+  return r.json() as Promise<HeatmapData>;
+}
+ 
