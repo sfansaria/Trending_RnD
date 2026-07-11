@@ -1,118 +1,25 @@
-<<<<<<< HEAD
-/* =============================================================================
-   FILE: frontend/src/app/globals.css
-   PURPOSE: Global CSS that applies to the whole app.
-            Three jobs:
-            1. Import the fonts from Google Fonts
-            2. Import Tailwind's base styles + our custom classes
-            3. Set base styles for the page and scrollbars
-   ============================================================================= */
-=======
-/* Global CSS - It applies to the whole app.   
-               Its Purpose -
-               1. Import the fonts from Google Fonts
-               2. Import Tailwind's base styles + our custom classes
-               3. Set base styles for the page and scrollbars*/
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
-
-/* Load fonts from Google Fonts CDN
-   JetBrains Mono = monospace font for numbers, keys, code-like text
-   Inter = clean sans-serif for body text
-   display=swap means: show fallback font immediately, swap when loaded */
-<<<<<<< HEAD
-   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-
-   /* Tailwind directives — these get replaced with actual CSS at build time
-      base      = resets browser default styles (margin, padding, etc.)
-      components = Tailwind's reusable component styles
-      utilities  = all the utility classes like flex, text-white, bg-ink-800 */
-   @tailwind base;
-   @tailwind components;
-   @tailwind utilities;
-   
-   /* CSS custom properties — available everywhere in the app */
-   :root {
-     --ink-950: #0a0a0f;
-     --accent: #7c6af7;
-   }
-   
-   /* Reset box model globally — makes width/height calculations predictable */
-   * { box-sizing: border-box; }
-   
-   /* Page base styles */
-   body {
-=======
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600&display=swap');
-
-
-/* Tailwind directives — these get replaced with actual CSS at build time
-      base      = resets browser default styles (margin, padding, etc.)
-      components = Tailwind's reusable component styles
-      utilities  = all the utility classes like flex, text-white, bg-ink-800 */
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-/* CSS custom properties — available everywhere in the app */
-:root {--ink-950: #0a0a0f; --accent: #7c6af7;}
-
-/* Reset box model globally — makes width/height calculations predictable */
 * { box-sizing: border-box; }
-
-/* Page base styles */
 body {
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
-     background: #0a0a0f;              /* dark background */
-     color: #e2e2ee;                   /* light text */
-     font-family: 'Inter', sans-serif; /* default font */
-     -webkit-font-smoothing: antialiased; /* smoother text rendering on Mac */
-   }
-   
-<<<<<<< HEAD
-   /* Custom scrollbar styling — only visible in Chrome/Safari/Edge */
-   ::-webkit-scrollbar { width: 6px; }
-   ::-webkit-scrollbar-track { background: #111118; }
-   ::-webkit-scrollbar-thumb { background: #363645; border-radius: 3px; }
-   ::-webkit-scrollbar-thumb:hover { background: #7c6af7; } /* purple on hover */
-   
-   /* Custom utility classes — added via @layer so Tailwind can purge them if unused */
-   @layer utilities {
-=======
-/* Custom scrollbar styling — only visible in Chrome/Safari/Edge */
+  background: #0a0a0f;
+  color: #e2e2ee;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #111118; }
 ::-webkit-scrollbar-thumb { background: #363645; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #7c6af7; } /* purple on hover */
-
-/* Custom utility classes — added via @layer so Tailwind can purge them if unused */
+::-webkit-scrollbar-thumb:hover { background: #7c6af7; }
 @layer utilities {
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
-     /* score-bar: gradient from purple to green, used for the trend score bar */
-     .score-bar {
-       background: linear-gradient(90deg, #7c6af7, #4ade80);
-     }
-<<<<<<< HEAD
-   
-=======
-
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
-     /* card-hover: smooth animation when hovering over a paper card */
-     .card-hover {
-       transition: border-color 0.15s ease, transform 0.15s ease;
-     }
-<<<<<<< HEAD
-=======
-
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
-     .card-hover:hover {
-       border-color: #7c6af7;       /* purple border on hover */
-       transform: translateY(-1px); /* subtle lift effect */
-     }
-<<<<<<< HEAD
-   }
-=======
-  
-
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
+  .card-hover {
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .card-hover:hover {
+    border-color: #7c6af7;
+    transform: translateY(-1px);
+  }
+}
