@@ -62,9 +62,12 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",          # Next.js dev server on your Mac
         "https://*.vercel.app", #Vercel deployment URL pattern
+        "https://trending-r-n-d.vercel.app",
         #"https://*.github.dev",           # GitHub Codespaces URL pattern
         #"https://*.app.github.dev",       # Alternative Codespaces URL pattern
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
+
     allow_credentials=True,   # allow cookies to be sent cross-origin
     allow_methods=["*"],      # allow GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],      # allow any request headers
@@ -85,14 +88,16 @@ app.include_router(papers_router)
 # Visit http://localhost:8000/ in your browser to see this
 # Visit http://localhost:8000/docs for interactive API documentation
 # -----------------------------------------------------------------------------
+
 @app.get("/")
 def root():
     return {
-        "message": "ArXiv ML Trends API",
-        "docs": "/docs",  # FastAPI auto-generates interactive docs here
-        "endpoints": ["/api/papers", "/api/topics", "/api/months", "/api/search", "/api/ingest", "/api/stats"],
-<<<<<<< HEAD
+        "message": "Trending RnD API",
+        "docs": "/docs",
+        "endpoints": [
+            "/api/papers", "/api/topics", "/api/months",
+            "/api/search", "/api/ingest", "/api/stats",
+            "/api/heatmap", "/api/saved"
+        ],
     }
-=======
-    }
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
+    
