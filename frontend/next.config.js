@@ -13,6 +13,7 @@
 //   This also avoids CORS issues in development.
 // =============================================================================
 
+<<<<<<< HEAD
 // /** @type {import('next').NextConfig} */
 // const nextConfig = {
 //     async rewrites() {
@@ -56,3 +57,22 @@ module.exports = nextConfig;
 // This is because in production, the frontend and backend are served from the same domain, so there's no CORS issue. 
 //On your Mac        → proxy is ON  → /api/* → localhost:8000  
 //On Vercel          → proxy is OFF → /api/* goes directly via NEXT_PUBLIC_API_URL  
+=======
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    async rewrites() {
+      return [
+        {
+          // Match any URL starting with /api/
+          source: "/api/:path*",
+          // Forward it to the backend on port 8000
+          // :path* captures everything after /api/ and forwards it
+          // e.g. /api/papers?month=2024-06 → http://localhost:8000/api/papers?month=2024-06
+          destination: "http://localhost:8000/api/:path*",
+        },
+      ];
+    },
+  };
+  
+  module.exports = nextConfig;
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74

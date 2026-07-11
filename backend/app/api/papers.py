@@ -212,6 +212,75 @@ def search_papers(
     return {"query": q, "papers": [_paper_to_dict(p) for p in papers]}
 
 
+
+# =============================================================================
+# ENDPOINT: GET /api/heatmap
+# NEW ENDPOINT — powers the topic heatmap view.
+#
+# Returns a 2D grid of data:
+#   - rows = unique topic labels across all months
+#   - columns = all months that have data
+#   - each cell = { paper_count, avg_score } for that topic+month combination
+#
+# The frontend uses this to draw the coloured grid.
+# Empty cells (topic didn't exist that month) return null.
+#
+# Example response:
+# {
+#   "months": ["2025-01", "2025-02"],
+#   "topics": ["Diffusion · Image", "LLM · Reasoning"],
+#   "grid": {
+#     "Diffusion · Image": {
+#       "2025-01": {"paper_count": 23, "avg_score": 67.4},
+#       "2025-02": null
+#     }
+#   }
+# }
+# =============================================================================
+router.get("/heatmap")
+def get_heatmap(session: Session = Depends(get_session)):
+    """
+    Returns topic x month data for the heatmap grid.
+    Queries the TopicSummary table which has one row per topic per month.
+    """
+    # Get all topic summaries across all months
+    all_summaries = session.exec(select(TopicSummary)).all()
+ 
+    if not all_summaries:
+        return {"months": [], "topics": [], "grid": {}}
+ 
+    # Collect all unique months and topic labels
+    # sorted months = columns of the heatmap (oldest to newest = left to right)
+    all_months = sorted(set(s.month_key for s in all_summaries))
+ 
+    # Collect unique topic labels — sorted by how often they appear across months
+    # (more frequent topics shown at the top)
+    topic_counts: dict = {}
+    for s in all_summaries:
+        topic_counts[s.topic_label] = topic_counts.get(s.topic_label, 0) + s.paper_count
+    all_topics = sorted(topic_counts.keys(), key=lambda t: topic_counts[t], reverse=True)
+ 
+    # Build the grid: topic_label → month_key → cell data
+    # Start with all cells as None (empty)
+    grid: dict = {topic: {month: None for month in all_months} for topic in all_topics}
+ 
+    # Fill in cells where we have data
+    for s in all_summaries:
+        grid[s.topic_label][s.month_key] = {
+            "paper_count": s.paper_count,
+            "avg_score": s.avg_score,
+            # top_paper_ids lets the frontend link to papers when cell is clicked
+            "top_paper_ids": json.loads(s.top_paper_ids),
+        }
+ 
+    return {
+        "months": all_months,
+        "topics": all_topics[:20],  # show top 20 topics max to keep grid readable
+        "grid": {t: grid[t] for t in all_topics[:20]},
+    }
+ 
+
+
 # =============================================================================
 # PIPELINE HELPER
 # Runs all three steps in sequence for a given month.

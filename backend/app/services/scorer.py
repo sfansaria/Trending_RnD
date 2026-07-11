@@ -164,4 +164,8 @@ def score_papers_for_month(month_key: str, session: Session) -> None:
 
     # Write all changes to the database in one transaction
     session.commit()
+<<<<<<< HEAD
     logger.info(f"Scored {len(papers)} papers for {month_key}")
+=======
+    logger.info(f"Scored {len(papers)} papers for {month_key}")
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74

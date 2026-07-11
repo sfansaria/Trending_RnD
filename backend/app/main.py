@@ -91,4 +91,8 @@ def root():
         "message": "ArXiv ML Trends API",
         "docs": "/docs",  # FastAPI auto-generates interactive docs here
         "endpoints": ["/api/papers", "/api/topics", "/api/months", "/api/search", "/api/ingest", "/api/stats"],
+<<<<<<< HEAD
     }
+=======
+    }
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74

@@ -33,13 +33,19 @@ logger = logging.getLogger(__name__)
 # cs.CL  = Computation and Language (NLP, chatbots, translation)
 # cs.CV  = Computer Vision (image recognition, object detection)
 # stat.ML = Statistics - Machine Learning
+# "cs.SD",    # Sound (speech processing, audio)
+# "eess.AS",  # Audio and Speech Processing
+
 # -----------------------------------------------------------------------------
 ML_CATEGORIES = [
-    "cs.LG",
-    "cs.AI",
-    "cs.CL",
-    "cs.CV",
-    "stat.ML",
+    "cs.LG",    # Machine Learning
+    "cs.AI",    # Artificial Intelligence
+    "cs.CL",    # Computation and Language (NLP)
+    "cs.CV",    # Computer Vision
+    "stat.ML",  # Statistics - Machine Learning
+    "cs.SD",    # Sound (speech processing, audio)
+    "eess.AS",  # Audio and Speech Processing
+
 ]
 
 # Build the arXiv query string: "cat:cs.LG OR cat:cs.AI OR cat:cs.CL OR ..."
@@ -85,13 +91,12 @@ def fetch_papers_for_month(month_key: str, session: Session, max_results: int = 
     # Combine category filter AND date range filter
     # Example: "(cat:cs.LG OR cat:cs.AI OR ...) AND submittedDate:[20240601000000 TO 20240630235959]"
     query = f"({CATEGORY_QUERY}) AND submittedDate:[{date_from} TO {date_to}]"
-    logger.info(f"Fetching papers for {month_key}: {query}")
+    logger.info(f"Fetching papers for {month_key}") #{query}")
 
     # ── STEP 3: Configure the arXiv API client ──────────────────────────────
-    client = arxiv.Client(
-        page_size=100,      # fetch 100 papers per API request (arXiv's max per page)
-        delay_seconds=3,    # wait 3 seconds between pages — be polite to arXiv's servers
-    )
+    client = arxiv.Client(page_size=100,      # fetch 100 papers per API request (arXiv's max per page)
+                          delay_seconds=3,    # wait 3 seconds between pages — be polite to arXiv's servers
+                          )
 
     # Define what we're searching for
     search = arxiv.Search(
@@ -111,9 +116,8 @@ def fetch_papers_for_month(month_key: str, session: Session, max_results: int = 
 
         # CHECK FOR DUPLICATES: query the DB for a paper with this arxiv_id
         # If it already exists, skip it — don't store duplicates
-        existing = session.exec(
-            select(Paper).where(Paper.arxiv_id == arxiv_id)
-        ).first()
+        existing = session.exec(select(Paper).where(Paper.arxiv_id == arxiv_id)).first()
+
         if existing:
             continue  # skip to the next paper
 
@@ -154,5 +158,6 @@ def fetch_papers_for_month(month_key: str, session: Session, max_results: int = 
     # COMMIT: write all the new papers to disk in one transaction
     session.commit()
     logger.info(f"Stored {new_count} new papers for {month_key}")
-
     return new_count
+
+   

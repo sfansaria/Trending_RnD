@@ -65,7 +65,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     // <html lang="en"> — the outermost HTML element.
     // lang="en" tells the browser and screen readers the page is in English.
     // This is important for accessibility tools.
+<<<<<<< HEAD
     <html lang="en" suppressHydrationWarning>
+=======
+    <html lang="en">
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
       {/* <body> wraps all visible content on the page.
           
           className applies two Tailwind CSS utility classes:
@@ -85,4 +89,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-ink-950">{children}</body>
     </html>
   );
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74

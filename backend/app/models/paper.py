@@ -9,7 +9,11 @@
 from typing import Optional
 
 # datetime is Python's built-in type for dates and times
+<<<<<<< HEAD
 from datetime import datetime,timezone
+=======
+from datetime import datetime, timezone
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
 
 # SQLModel combines SQLAlchemy (database tool) + Pydantic (data validation).
 # SQLModel = Field lets us set default values, indexes, constraints.
@@ -119,6 +123,11 @@ class TopicSummary(SQLModel, table=True):
     # JSON list of the top 5 arxiv_ids in this cluster by trend score
     # e.g. '["2401.12345", "2401.67890"]'
     top_paper_ids: str
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
 ################################################################
 #new part appended to add the Bookmarking feature to the database
 ###########################################################
@@ -136,4 +145,7 @@ class SavedPaper(SQLModel, table=True):
  
     # When the user saved it — used to sort the Saved tab "most recently saved first"
     saved_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+<<<<<<< HEAD
 
+=======
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74

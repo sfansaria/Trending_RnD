@@ -192,4 +192,8 @@ def extract_topics_for_month(month_key: str, session: Session) -> int:
     # Write everything to the database at once
     session.commit()
     logger.info(f"Extracted {n_clusters} topics for {month_key}")
+<<<<<<< HEAD
     return n_clusters
+=======
+    return n_clusters
+>>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
