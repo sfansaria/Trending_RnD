@@ -48,6 +48,15 @@ export const metadata: Metadata = {
   description: "Discover trending machine learning research papers by month and topic",
 };
 
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body className="min-h-screen bg-ink-950">{children}</body>
+    </html>
+  );
+}
+
+
 
 // =============================================================================
 // ROOT LAYOUT COMPONENT
@@ -60,37 +69,26 @@ export const metadata: Metadata = {
 // =============================================================================
 
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    // <html lang="en"> — the outermost HTML element.
-    // lang="en" tells the browser and screen readers the page is in English.
-    // This is important for accessibility tools.
-<<<<<<< HEAD
-    <html lang="en" suppressHydrationWarning>
-=======
-    <html lang="en">
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
-      {/* <body> wraps all visible content on the page.
+
+
+// <html lang="en"> — the outermost HTML element.
+// lang="en" tells the browser and screen readers the page is in English.
+// This is important for accessibility tools.
+    
+/* <body> wraps all visible content on the page.
           
-          className applies two Tailwind CSS utility classes:
+className applies two Tailwind CSS utility classes:
           
-          min-h-screen  → minimum height = 100% of the viewport height.
-                          Ensures the dark background covers the full screen
-                          even if the page has very little content.
+min-h-screen  → minimum height = 100% of the viewport height.
+                Ensures the dark background covers the full screen
+                even if the page has very little content.
           
-          bg-ink-950    → sets background colour to #0a0a0f (near-black).
-                          "ink-950" is our custom colour defined in
+bg-ink-950    → sets background colour to #0a0a0f (near-black).
+                         "ink-950" is our custom colour defined in
                           tailwind.config.js under theme.extend.colors.ink.
                           Without this, the background would be white.
           
-          {children}    → this is where page.tsx renders.
+{children}    → this is where page.tsx renders.
                           Next.js replaces {children} with the full output
-                          of page.tsx at runtime. */}
-      <body className="min-h-screen bg-ink-950">{children}</body>
-    </html>
-  );
-<<<<<<< HEAD
-}
-=======
-}
->>>>>>> dc3743cf2912bb497a84286063f1b324b8b79b74
+                          of page.tsx at runtime. */
+     
