@@ -6,7 +6,7 @@ A full-stack web application for discovering and tracking trending machine learn
 
 ## Live Demo
 
-- **Frontend:** https://trending-rnd.vercel.app
+- **Frontend:** https://trending-r-n-d.vercel.app/
 - **Backend API:** https://trending-rnd-backend.onrender.com/docs
 
 ---
