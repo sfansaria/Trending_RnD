@@ -4,10 +4,10 @@ A full-stack web application for discovering and tracking trending machine learn
 
 ---
 
-## Live Demo
+## Running the App
 
-- **Frontend:** https://trending-r-n-d.vercel.app/
-- **Backend API:** https://trending-rnd-backend.onrender.com/docs
+This project is self-hosted via Docker Compose (no external hosting service is required.
+For [Deployment](#deployment) see below to run it yourself.
 
 ---
 
@@ -37,7 +37,7 @@ A full-stack web application for discovering and tracking trending machine learn
 | ML / NLP | scikit-learn (TF-IDF, KMeans), numpy |
 | Paper data | arXiv Python library |
 | Citation data | Semantic Scholar API |
-| Deployment | Vercel (frontend), Render (backend), Supabase (database) |
+| Deployment | Docker (self-hosted |
 
 ---
 
@@ -48,9 +48,11 @@ Trending_RnD/
 ├── start.sh                          # starts both servers locally
 ├── README.md
 ├── .gitignore
+|-- docker-compose.yml
+containers
 ├── backend/
 │   ├── requirements.txt              # Python dependencies
-│   ├── Procfile                      # tells Render how to start the server
+│   ├── Dockerfile                    # backend container build
 │   ├── arxiv_trends.db               # local SQLite database (not committed)
 │   └── app/
 │       ├── main.py                   # FastAPI entry point + CORS
@@ -66,6 +68,7 @@ Trending_RnD/
 │           └── papers.py             # all REST endpoints
 └── frontend/
     ├── package.json
+    |-- Dockerfile                    # frontend container build
     ├── next.config.js                # proxies /api/* to backend in development
     ├── tailwind.config.js            # custom colours and fonts
     ├── postcss.config.js             # runs Tailwind and Autoprefixer
@@ -220,29 +223,49 @@ python -m app.core.init_db
 
 ## Deployment
 
-Deployed using three free services:
+This project runs entirely via Docker Compose — Postgres, the FastAPI backend, and the Next.js frontend all run as containers.
+No external services (Supabase, Vercel, Render) are required.
 
-| Service | Purpose | URL |
-|---|---|---|
-| Vercel | Hosts the Next.js frontend | vercel.com |
-| Render | Runs the FastAPI backend | render.com |
-| Supabase | PostgreSQL cloud database | supabase.com |
+Requirements
 
-### Deploy your own instance
+- Docker installed and running
 
-**1. Supabase** — create a project, copy the PostgreSQL connection string from Settings → Database → URI
+## Quick start
 
-**2. Render** — connect your GitHub repo, set Root Directory to `backend`, add environment variable:
-```
-DATABASE_URL = your-supabase-connection-string
-```
+- git clone https://github.com/sfansaria/Trending_RnD.git
+- cd Trending_RnD
+- docker compose up -d --build
 
-**3. Vercel** — connect your GitHub repo, set Root Directory to `frontend`, add environment variable:
-```
-NEXT_PUBLIC_API_URL = https://your-render-backend-url.onrender.com
-```
+This starts three containers:
 
-Every `git push` to `main` auto-redeploys both services.
+postgres -> Database -> internal only
+backend	-> FastAPI (API) -> http://localhost:8000
+frontend ->	Next.js (UI) ->	http://localhost:3000
+
+- Open http://localhost:3000 once all three containers report Up.
+
+- For checking container status
+  docker compose ps
+- For Viewing logs
+  docker compose logs backend --tail=50
+  docker compose logs frontend --tail=50
+
+- Deploying publicly (e.g. on a Raspberry Pi)
+
+- If deploying somewhere reachable from outside the local network, 
+  update NEXT_PUBLIC_API_URL under the frontend service's build.args 
+  in docker-compose.yml to the real public URL (it must be set at build time, 
+  since Next.js bakes it into the compiled JS). Then rebuild using - docker compose up -d --build frontend
+
+- A production Caddyfile for automatic HTTPS is planned - see project roadmap.
+
+- Environment variables
+  The backend reads DATABASE_URL from the environment (set automatically by docker-compose.yml for the containerized Postgres). 
+  No manual .env file is needed for local Docker use.
+
+
+PASTED
+
 
 ---
 
@@ -255,23 +278,25 @@ Every `git push` to `main` auto-redeploys both services.
 - [x] Save / bookmark papers
 - [x] Copy BibTeX citation and share link
 - [ ] Topic heatmap across months
+- [ ] A production Caddyfile for automatic HTTPS 
 - [ ] Auto-fetch on nightly schedule
 - [ ] Weekly email digest via Brevo
 - [ ] Author leaderboard
 - [ ] GitHub stars signal via Papers With Code
 - [ ] Semantic search with sentence-transformers
-- [ ] AI-generated paper summaries via Claude API
 - [ ] User login and per-user bookmarks
+
 
 ---
 
 ## Development Notes
 
-**Hot reload** — both servers watch for file changes. Python file changes restart the backend automatically. TypeScript changes update the browser without a page reload.
+**Local vs Docker database** — running directly with `start.sh` uses `arxiv_trends.db` (SQLite). 
+                               Running via Docker Compose uses PostgreSQL in the `postgres` container instead, 
+                               connected via the `DATABASE_URL` environment variable. The two are independent.
 
-**Local vs production database** — locally the app uses `arxiv_trends.db` (SQLite). In production it uses the `DATABASE_URL` environment variable pointing to Supabase PostgreSQL. The two databases are completely independent.
-
-**Adding features** — build and test locally, then `git push`. Vercel and Render redeploy automatically within 2-3 minutes.
+**Adding features** — build and test locally, 
+                      then rebuild the relevant container:`docker compose up -d --build backend` or `docker compose up -d --build frontend`.
 
 ---
 
